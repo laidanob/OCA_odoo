@@ -1,0 +1,31 @@
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="view_company_page_oca">
+            <field name="name">res.company.form.oca</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <data>
+                    <notebook>
+                        <page string="Oca">
+                            <group>
+                                <field name="codigoOrigen" />
+                                <field name="cuit" />
+                                <field name="operativaSucursal" />
+                                <field name="operativaDomicilio" />
+                                <field name="operativaUrgenteSucursal" />
+                                <field name="operativaUrgenteDomicilio" />
+                                <field name="pesoDefecto" />
+                                <field name="volumenDefecto" />
+                                <field name="cantidadPaquetes" />
+                                <field name="cantidadProductos" />
+                            </group>
+                        </page>
+                    </notebook>
+                </data>
+            </field>
+        </record>
+
+    </data>
+</odoo>
