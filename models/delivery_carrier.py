@@ -9,7 +9,17 @@ import xml.etree.ElementTree as ET
 class DeliveryCarrier(models.Model):
     _inherit = 'delivery.carrier'
 
-    delivery_type = fields.Selection(selection_add=[('ocaSucursal', 'OCA Sucursal'),('ocaDomicilio', 'OCA Domicilio'),('ocaPrioritarioSucursal', 'OCA Prioritario Sucursal'),('ocaPrioritarioDomicilio', 'OCA Prioritario Domicilio')],ondelete={'ocaSucursal': 'set default','ocaDomicilio': 'set default','ocaPrioritarioSucursal': 'set default','ocaPrioritarioDomicilio': 'set default'})
+    delivery_type = fields.Selection(selection_add=[
+                                                    ('ocaSucursal', 'OCA Sucursal'),
+                                                    ('ocaDomicilio', 'OCA Domicilio'),
+                                                    ('ocaPrioritarioSucursal', 'OCA Prioritario Sucursal'),
+                                                    ('ocaPrioritarioDomicilio', 'OCA Prioritario Domicilio')
+                                                    ],
+                                                    ondelete={'ocaSucursal': 'set default',
+                                                            'ocaDomicilio': 'set default',
+                                                            'ocaPrioritarioSucursal': 'set default',
+                                                            'ocaPrioritarioDomicilio': 'set default'}
+                                                    )
     
     urlRateShipment = 'http://webservice.oca.com.ar/oep_tracking/Oep_Track.asmx/Tarifar_Envio_Corporativo'
 
@@ -45,7 +55,8 @@ class DeliveryCarrier(models.Model):
             self.validacion_codigos(cp_origen,cp_cliente)
      
             cantidad = self.conteo_productos(order)
-            
+            #la operativa es lo que define el tipo de envio en OCA, a domicilio, sucurcursal, prioritario, etc.
+
             params = {
                         "PesoTotal": peso_defecto,
                         "VolumenTotal": volumen_defecto,
@@ -59,7 +70,6 @@ class DeliveryCarrier(models.Model):
             url = self.urlRateShipment + "?" + urllib.parse.urlencode(params)
             
             r = requests.get(url)
-            r.status_code = 200
             if r.status_code == 200:
                 data = r.content
                 tree = ET.fromstring(data)
@@ -105,7 +115,6 @@ class DeliveryCarrier(models.Model):
                 }
               
     def ocaSucursal_rate_shipment(self, order):
-        #la operativa es lo que define el tipo de envio en OCA, a domicilio, sucurcursal, prioritario, etc.
         operativa = order.company_id.operativaSucursal
         price = self.request_oca(operativa,order)
         cantidad = self.conteo_productos(order)
