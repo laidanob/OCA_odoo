@@ -14,11 +14,12 @@ class DeliveryCarrier(models.Model):
     delivery_type = fields.Selection(selection_add=[('ocaSucursal', 'OCA Sucursal'),('ocaDomicilio', 'OCA Domicilio'),('ocaPrioritarioSucursal', 'OCA Prioritario Sucursal'),('ocaPrioritarioDomicilio', 'OCA Prioritario Domicilio')],ondelete={'ocaSucursal': 'set default','ocaDomicilio': 'set default','ocaPrioritarioSucursal': 'set default','ocaPrioritarioDomicilio': 'set default'})
     
     categorias = ["Premium", "Basic", "Nature", "Classic"]
-    def validacion_codigos(self,codigo1,codigo2):
-            if codigo2 == False:
+    def validacion_codigos(self,cp_cliente,cp_origen):
+            if cp_cliente == False:
                 raise ValidationError('¡El Cliente debe tener código postal!')
-            if codigo1 == False:
+            if cp_origen == False:
                 raise ValidationError('¡No hay codigo postal de origen!')
+            
     def conteo_productos(self,order):
         cantidad = self.cantidad
         categorias = self.categorias
@@ -30,7 +31,7 @@ class DeliveryCarrier(models.Model):
                 cantidad += line.product_uom_qty
                 return cantidad
 
-    def oca_valor(self,operativa,order):
+    def request_oca(self,operativa,order):
             cp_cliente = order.partner_shipping_id.zip
             cp_origen = order.company_id.codigoOrigen
             peso_defecto = order.company_id.pesoDefecto
@@ -56,6 +57,8 @@ class DeliveryCarrier(models.Model):
             
             r = requests.get(url)
             
+            return r
+            
             price = 0
             data = r.content
             tree = ET.fromstring(data)
@@ -68,32 +71,12 @@ class DeliveryCarrier(models.Model):
     def ocaSucursal_rate_shipment(self, order):
         #la operativa es lo que define el tipo de envio en OCA, a domicilio, sucurcursal, prioritario, etc.
         operativa = order.company_id.operativaSucursal
-        cantidad = self.cantidad
-        price = self.oca_valor(operativa,order)
-        cp_cliente = order.partner_shipping_id.zip
-        cp_origen = order.company_id.codigoOrigen
-        peso_defecto = order.company_id.pesoDefecto
-        volumen_defecto = order.company_id.volumenDefecto
-        cantidad_paquetes = order.company_id.cantidadPaquetes
-        cuit = order.company_id.cuit
+       
         
-        self.validacion_codigos(cp_origen,cp_cliente)
     
+        r = self.request_oca(operativa,order)
         cantidad = self.conteo_productos(order)
         
-        params = {
-                    "PesoTotal": peso_defecto,
-                    "VolumenTotal": volumen_defecto,
-                    "CodigoPostalOrigen": cp_origen,
-                    "CodigoPostalDestino": cp_cliente,
-                    "CantidadPaquetes": cantidad_paquetes,
-                    "Cuit": cuit,
-                    "Operativa": operativa
-                    }
-
-        url = self.urlRateShipment + "?" + urllib.parse.urlencode(params)
-        
-        r = requests.get(url)
         
         price = 0
         data = r.content
