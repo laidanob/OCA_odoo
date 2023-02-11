@@ -6,8 +6,18 @@ from odoo.exceptions import ValidationError
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
+    
+    def set_delivery_line(self, carrier, amount,cost):
 
-    def _create_delivery_line(self, carrier, price_unit):
+        # Remove delivery products from the sales order
+        self._remove_delivery_line()
+        print(cost)
+        for order in self:
+            order.carrier_id = carrier.id
+            order._create_delivery_line(carrier, amount,cost)
+        return True
+
+    def _create_delivery_line(self, carrier, price_unit,cost):
         SaleOrderLine = self.env['sale.order.line']
         if self.partner_id:
             # set delivery detail in the customer language
@@ -34,7 +44,7 @@ class SaleOrder(models.Model):
             'product_id': carrier.product_id.id,
             'tax_id': [(6, 0, taxes_ids)],
             'is_delivery': True,
-            'purchase_price': price_unit,
+            'purchase_price': cost,
         }
         if carrier.invoice_policy == 'real':
             values['price_unit'] = 0

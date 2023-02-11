@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
-
-import requests
-import xml.etree.ElementTree as ET
+from odoo import models, fields
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
