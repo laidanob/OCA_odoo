@@ -27,13 +27,13 @@ class DeliveryCarrier(models.Model):
     
     categorias = ["Premium", "Basic", "Nature", "Classic"]
     
-    def validacion_codigos(self,cp_cliente,cp_origen):
+    def _validacion_codigos(self,cp_cliente,cp_origen):
             if cp_cliente == False:
                 raise ValidationError('¡El Cliente debe tener código postal!')
             if cp_origen == False:
                 raise ValidationError('¡No hay codigo postal de origen!')
             
-    def conteo_productos(self,order):
+    def _conteo_productos(self,order):
         cantidad = self.cantidad
         categorias = self.categorias
         for line in order.order_line:
@@ -44,7 +44,7 @@ class DeliveryCarrier(models.Model):
                 cantidad += line.product_uom_qty
                 return cantidad
 
-    def request_oca(self,operativa,order):
+    def _request_oca(self,operativa,order):
             cp_cliente = order.partner_shipping_id.zip
             cp_origen = order.company_id.codigoOrigen
             peso_defecto = order.company_id.pesoDefecto
@@ -52,9 +52,9 @@ class DeliveryCarrier(models.Model):
             cantidad_paquetes = order.company_id.cantidadPaquetes
             cuit = order.company_id.cuit
             
-            self.validacion_codigos(cp_origen,cp_cliente)
+            self._validacion_codigos(cp_origen,cp_cliente)
      
-            cantidad = self.conteo_productos(order)
+            
             #la operativa es lo que define el tipo de envio en OCA, a domicilio, sucurcursal, prioritario, etc.
 
             params = {
@@ -116,8 +116,8 @@ class DeliveryCarrier(models.Model):
               
     def ocaSucursal_rate_shipment(self, order):
         operativa = order.company_id.operativaSucursal
-        price = self.request_oca(operativa,order)
-        cantidad = self.conteo_productos(order)
+        price = self._request_oca(operativa,order)
+        cantidad = self._conteo_productos(order)
         cantidad_productos = order.company_id.cantidadProductos
         if type(price) == dict:
             return price
@@ -142,8 +142,8 @@ class DeliveryCarrier(models.Model):
      
     def ocaDomicilio_rate_shipment(self, order):
         operativa = order.company_id.operativaDomicilio
-        price = self.request_oca(operativa,order)
-        cantidad = self.conteo_productos(order)
+        price = self._request_oca(operativa,order)
+        cantidad = self._conteo_productos(order)
         cantidad_productos = order.company_id.cantidadProductos
         if type(price) == dict:
             return price
@@ -167,8 +167,8 @@ class DeliveryCarrier(models.Model):
                     }
     def ocaPrioritarioSucursal_rate_shipment(self, order):
         operativa = order.company_id.operativaUrgenteSucursal
-        price = self.request_oca(operativa,order)
-        cantidad = self.conteo_productos(order)
+        price = self._request_oca(operativa,order)
+        cantidad = self._conteo_productos(order)
         cantidad_productos = order.company_id.cantidadProductos
         if type(price) == dict:
             return price
@@ -193,8 +193,8 @@ class DeliveryCarrier(models.Model):
         
     def ocaPrioritarioDomicilio_rate_shipment(self, order):
         operativa = order.company_id.operativaUrgenteDomicilio
-        price = self.request_oca(operativa,order)
-        cantidad = self.conteo_productos(order)
+        price = self._request_oca(operativa,order)
+        cantidad = self._conteo_productos(order)
         cantidad_productos = order.company_id.cantidadProductos
         if type(price) == dict:
             return price
