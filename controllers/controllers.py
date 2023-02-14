@@ -1,20 +1,31 @@
 # -*- coding: utf-8 -*-
-from odoo import http
 
-# class AndreaniOdoo(http.Controller):
-#     @http.route('/andreani_odoo/andreani_odoo/', auth='public')
-#     def index(self, **kw):
-#         return "Hello, world"
+from odoo import http, _
+from odoo.http import request
+from odoo.addons.website_sale.controllers.main import WebsiteSale
 
-#     @http.route('/andreani_odoo/andreani_odoo/objects/', auth='public')
-#     def list(self, **kw):
-#         return http.request.render('andreani_odoo.listing', {
-#             'root': '/andreani_odoo/andreani_odoo',
-#             'objects': http.request.env['andreani_odoo.andreani_odoo'].search([]),
-#         })
+class WebsiteSaleDeliveryOCACost(WebsiteSale):
+    
+    
+    @http.route(['/shop/payment'], type='http', auth="public", website=True)
+    def payment(self, **post):
+        res = super(WebsiteSaleDeliveryOCACost, self).payment(**post)
+        order = request.website.sale_get_order()
+        carrier_id = post.get('carrier_id')
+        if carrier_id:
+            carrier_id = int(carrier_id)
+        if order:
+            order._check_carrier_quotation(force_carrier_id=carrier_id)
+            if carrier_id:
+                return request.redirect("/shop/payment")
 
-#     @http.route('/andreani_odoo/andreani_odoo/objects/<model("andreani_odoo.andreani_odoo"):obj>/', auth='public')
-#     def object(self, obj, **kw):
-#         return http.request.render('andreani_odoo.object', {
-#             'object': obj
-#         })
+        return res
+    
+    @http.route(['/shop/update_carrier'], type='json', auth='public', methods=['POST'], website=True, csrf=False)
+    def update_eshop_carrier(self, **post):
+        order = request.website.sale_get_order()
+        carrier_id = int(post['carrier_id'])
+        if order:
+            order._check_carrier_quotation(force_carrier_id=carrier_id)
+        return self._update_website_sale_delivery_return(order, **post)
+

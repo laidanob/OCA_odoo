@@ -15,7 +15,7 @@
     'category': 'Sales',
     'version': '0.1',
 
-    'depends': ['base', 'sale', 'delivery'],
+    'depends': ['base', 'sale', 'delivery','website_sale_delivery'],
 
     'data': [
         'views/res_company.xml',

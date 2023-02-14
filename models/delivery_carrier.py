@@ -42,7 +42,7 @@ class DeliveryCarrier(models.Model):
                 pass
             elif line.product_id.public_categ_ids.name in categorias:
                 cantidad += line.product_uom_qty
-                return cantidad
+            return cantidad
 
     def _request_oca(self,operativa,order):
             cp_cliente = order.partner_shipping_id.zip
@@ -216,4 +216,12 @@ class DeliveryCarrier(models.Model):
                     'error_message': False,
                     'warning_message': False
                     }
+    
+    def ocaSucursal_send_shipping(self,pickings):
+        print('221 oca module delivery carrier, pickings',pickings.browse())
         
+        dic = [{
+            'tracking_number': '12232',
+            'exact_price': 0,
+        }]
+        return dic
