@@ -51,6 +51,9 @@ class SaleOrder(models.Model):
             self._remove_delivery_line()
             if carrier:
                 res = carrier.rate_shipment(self)
+                if not res.get('cost'):
+                    print("COSTO",res)
+                    res['cost'] = 0
                 if res.get('success'):
                     self.set_delivery_line(carrier, res['price'],res['cost'])
                     self.delivery_rating_success = True
